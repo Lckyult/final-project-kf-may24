@@ -1,0 +1,51 @@
+WITH cte AS (
+    SELECT 
+        a.transaction_id,
+        a.date,
+        a.branch_id,
+        b.branch_name, 
+        b.kota,
+        b.provinsi,
+        b.rating as rating_cabang,
+        a.customer_name,
+        a.product_id,
+        c.product_name,
+        a.price as actual_price,
+        a.discount_percentage,
+        CASE
+            WHEN a.price <= 50000 THEN 10
+            WHEN a.price > 50000 AND a.price <= 100000 THEN 15
+            WHEN a.price > 100000 AND a.price <= 300000 THEN 20
+            WHEN a.price > 300000 AND a.price <= 500000 THEN 25
+            ELSE 30
+        END AS persentase_gross_laba,
+        a.price - (a.price * a.discount_percentage / 100) AS nett_sales,
+        a.rating as rating_transaksi
+    FROM 
+        rakamin-final-project-424807.dataset_kf_may24.kf_final_transaction as A
+    INNER JOIN 
+        rakamin-final-project-424807.dataset_kf_may24.kf_kantor_cabang as B
+        ON a.branch_id = b.branch_id
+    INNER JOIN 
+        rakamin-final-project-424807.dataset_kf_may24.kf_product as C
+        ON a.product_id = c.product_id
+)
+SELECT 
+    transaction_id,
+    date,
+    branch_id,
+    branch_name, 
+    kota,
+    provinsi,
+    rating_cabang,
+    customer_name,
+    product_id,
+    product_name,
+    actual_price,
+    discount_percentage,
+    persentase_gross_laba,
+    nett_sales,
+    actual_price * (persentase_gross_laba/100) AS nett_profit,
+    rating_transaksi,
+FROM 
+    cte;
